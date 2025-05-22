@@ -1,58 +1,45 @@
 import { Request, Response } from 'express';
-import { Viaje } from '../models/Viaje';
+import { ViajeService } from '../services/viaje.service';
 import { viajeSchema } from '../validations/viaje.schema';
 
-export const getViajes = async (_req: Request, res: Response): Promise<void> => {
-  const viajes = await Viaje.find();
+const service = new ViajeService();
+
+export const getViajes = async (_req: Request, res: Response) => {
+  const viajes = await service.listAll();
   res.json(viajes);
 };
 
-export const createViaje = async (req: Request, res: Response): Promise<void> => {
+export const createViaje = async (req: Request, res: Response) => {
   const { error, value } = viajeSchema.validate(req.body, { abortEarly: false });
-
   if (error) {
     res.status(400).json({ message: 'Datos inválidos', errors: error.details.map(e => e.message) });
-    return;
   }
-
   try {
-    const viaje = new Viaje(value);
-    const saved = await viaje.save();
-    res.status(201).json(saved);
-  } catch (err) {
-    res.status(500).json({ message: 'Error al crear el viaje', error: err });
+    const newViaje = await service.createViaje(value);
+    res.status(201).json(newViaje);
+  } catch (err: any) {
+    res.status(400).json({ message: err.message });
   }
 };
 
-export const updateViaje = async (req: Request, res: Response): Promise<void> => {
+export const updateViaje = async (req: Request, res: Response) => {
   const { error, value } = viajeSchema.validate(req.body, { abortEarly: false });
-
   if (error) {
     res.status(400).json({ message: 'Datos inválidos', errors: error.details.map(e => e.message) });
-    return;
   }
-
   try {
-    const updated = await Viaje.findByIdAndUpdate(req.params.id, value, { new: true });
-    if (!updated) {
-      res.status(404).json({ message: 'Viaje no encontrado' });
-      return;
-    }
-    res.json(updated);
-  } catch (err) {
-    res.status(500).json({ message: 'Error al actualizar el viaje', error: err });
+    const updatedViaje = await service.updateViaje(req.params.id, value);
+    res.json(updatedViaje);
+  } catch (err: any) {
+    res.status(404).json({ message: err.message });
   }
 };
 
-export const deleteViaje = async (req: Request, res: Response): Promise<void> => {
+export const deleteViaje = async (req: Request, res: Response) => {
   try {
-    const updated = await Viaje.findByIdAndUpdate(req.params.id, { estado: 'Cancelado' }, { new: true });
-    if (!updated) {
-      res.status(404).json({ message: 'Viaje no encontrado' });
-      return;
-    }
-    res.json({ message: 'Viaje cancelado', viaje: updated });
-  } catch (err) {
-    res.status(500).json({ message: 'Error al cancelar el viaje', error: err });
+    const canceled = await service.cancelViaje(req.params.id);
+    res.json({ message: 'Viaje cancelado', viaje: canceled });
+  } catch (err: any) {
+    res.status(404).json({ message: err.message });
   }
 };
