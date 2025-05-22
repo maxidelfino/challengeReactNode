@@ -157,15 +157,15 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {sortedViajes.map((viaje) => (
-              <tr key={viaje.id} className="hover:bg-gray-50">
+            {sortedViajes.map((viaje, index) => (
+              <tr key={index} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{viaje.camion}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{viaje.conductor}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{viaje.origen}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{viaje.destino}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{viaje.combustible}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {viaje.cantidad_litros.toLocaleString()} L
+                  {viaje.cantidad_litros?.toLocaleString()} L
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {new Date(viaje.fecha_salida).toLocaleDateString("es-ES", {
@@ -191,7 +191,7 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
                     </button>
 
                     <button
-                      onClick={() => onCancel(viaje.id)}
+                      onClick={() => onCancel(viaje._id)}
                       disabled={viaje.estado === "Cancelado"}
                       className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
                     >

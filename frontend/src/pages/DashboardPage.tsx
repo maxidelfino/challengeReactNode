@@ -57,28 +57,32 @@ const DashboardPage = () => {
     try {
       if (selectedViaje) {
         const updatedViaje = await updateViaje(viaje)
-        setViajes(viajes.map((v) => (v.id === updatedViaje.id ? updatedViaje : v)))
+        setViajes(viajes.map((v) => (v._id === updatedViaje._id ? updatedViaje : v)))
         showToast("Viaje actualizado correctamente", "success")
       } else {
-        const newViaje = await createViaje(viaje)
+        const { _id, ...viajeData } = viaje
+        const newViaje = await createViaje(viajeData as Omit<Viaje, "id">)
         setViajes([...viajes, newViaje])
         showToast("Viaje creado correctamente", "success")
       }
       setIsModalOpen(false)
-    } catch (error) {
-      console.error("Error saving viaje:", error)
-      showToast("Error al guardar el viaje", "error")
+    } catch (error: any) {
+      showToast(error.message || "Error al guardar el viaje", "error")
     }
   }
 
   const handleCancelViaje = async (id: string) => {
     try {
+      if (!id) {
+        showToast("ID de viaje no válido", "error")
+        return
+      }
+
       const canceledViaje = await cancelViaje(id)
-      setViajes(viajes.map((v) => (v.id === id ? canceledViaje : v)))
+      setViajes(viajes.map((v) => (v._id === id ? canceledViaje : v)))
       showToast("Viaje cancelado correctamente", "success")
-    } catch (error) {
-      console.error("Error canceling viaje:", error)
-      showToast("Error al cancelar el viaje", "error")
+    } catch (error: any) {
+      showToast(error.message || "Error al cancelar el viaje", "error")
     }
   }
 

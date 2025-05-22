@@ -108,17 +108,31 @@ const ViajeModal = ({ isOpen, onClose, onSave, viaje }: ViajeModalProps) => {
     if (!validateForm()) return
 
     try {
-      onSave({
-        id: viaje?.id || "",
-        camion: formData.camion!,
-        conductor: formData.conductor!,
-        origen: formData.origen!,
-        destino: formData.destino!,
-        combustible: formData.combustible!,
-        cantidad_litros: formData.cantidad_litros!,
-        fecha_salida: new Date(formData.fecha_salida!).toISOString(),
-        estado: formData.estado!,
-      })
+      if (viaje) {
+        onSave({
+          _id: viaje._id,
+          camion: formData.camion!,
+          conductor: formData.conductor!,
+          origen: formData.origen!,
+          destino: formData.destino!,
+          combustible: formData.combustible!,
+          cantidad_litros: formData.cantidad_litros!,
+          fecha_salida: new Date(formData.fecha_salida!).toISOString(),
+          estado: formData.estado!,
+        })
+      } else {
+        onSave({
+          _id: "",
+          camion: formData.camion!,
+          conductor: formData.conductor!,
+          origen: formData.origen!,
+          destino: formData.destino!,
+          combustible: formData.combustible!,
+          cantidad_litros: formData.cantidad_litros!,
+          fecha_salida: new Date(formData.fecha_salida!).toISOString(),
+          estado: "En tránsito",
+        })
+      }
     } catch (error) {
       console.error("Error submitting form:", error)
     }

@@ -25,7 +25,6 @@ const LoginPage = () => {
       await login(email, password)
       navigate("/")
     } catch (err) {
-      console.error("Login failed:", err)
       showToast("Credenciales inválidas. Por favor intente nuevamente.", "error")
     } finally {
       setIsSubmitting(false)

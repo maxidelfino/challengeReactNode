@@ -34,13 +34,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Check if user is already logged in
     const token = localStorage.getItem("token")
     const storedUser = localStorage.getItem("user")
 
     if (token && storedUser) {
       try {
-        // Check if token is expired
         const payload = JSON.parse(atob(token.split(".")[1]))
         const isExpired = payload.exp * 1000 < Date.now()
 

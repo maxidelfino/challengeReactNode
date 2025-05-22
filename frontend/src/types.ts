@@ -1,5 +1,5 @@
 export interface Viaje {
-  id: string
+  _id: string
   camion: string
   conductor: string
   origen: string
@@ -8,6 +8,11 @@ export interface Viaje {
   cantidad_litros: number
   fecha_salida: string
   estado: string
+}
+
+export interface CancelResponse {
+  message: string;
+  viaje: Viaje;
 }
 
 export interface User {
