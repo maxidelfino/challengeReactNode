@@ -7,9 +7,12 @@ import ViajeTable from "../components/ViajeTable"
 import ViajeModal from "../components/ViajeModal"
 import { fetchViajes, updateViaje, createViaje, cancelViaje } from "../utils/api"
 import type { Viaje } from "../types"
-import { PlusIcon, LogOutIcon } from "lucide-react"
+import { PlusIcon, LogOutIcon, FileDownIcon, RefreshCwIcon } from "lucide-react"
 import { useToast } from "../context/ToastContext"
 import LoadingSpinner from "../components/LoadingSpinner"
+import Pagination from "../components/Pagination"
+import DashboardStats from "../components/DashboardStats"
+import { exportToExcel } from "../utils/exportUtils"
 
 const DashboardPage = () => {
   const { user, logout } = useAuth()
@@ -22,26 +25,47 @@ const DashboardPage = () => {
     combustible: "",
     estado: "",
   })
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const { showToast } = useToast()
 
-  useEffect(() => {
-    const loadViajes = async () => {
-      try {
-        const data = await fetchViajes()
-        setViajes(data)
-      } catch (error) {
-        console.error("Error fetching viajes:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  })
 
+  const loadViajes = async () => {
+    try {
+      setIsLoading(true)
+      const data = await fetchViajes(pagination.currentPage, 10, filters)
+      setViajes(data.viajes)
+      setPagination({
+        currentPage: pagination.currentPage > data.pages ? 1 : pagination.currentPage,
+        totalPages: data.pages,
+        totalItems: data.total,
+      })
+    } catch (error) {
+      console.error("Error fetching viajes:", error)
+      showToast("Error al cargar los viajes", "error")
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
+  }
+
+  useEffect(() => {
     loadViajes()
 
     const interval = setInterval(loadViajes, 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, [pagination.currentPage, filters])
+
+  const handleRefresh = () => {
+    setIsRefreshing(true)
+    loadViajes()
+  }
 
   const handleAddViaje = () => {
     setSelectedViaje(null)
@@ -66,6 +90,8 @@ const DashboardPage = () => {
         showToast("Viaje creado correctamente", "success")
       }
       setIsModalOpen(false)
+      setRefreshTrigger((prev) => prev + 1)
+      loadViajes()
     } catch (error: any) {
       showToast(error.message || "Error al guardar el viaje", "error")
     }
@@ -81,18 +107,29 @@ const DashboardPage = () => {
       const canceledViaje = await cancelViaje(id)
       setViajes(viajes.map((v) => (v._id === id ? canceledViaje : v)))
       showToast("Viaje cancelado correctamente", "success")
+      setRefreshTrigger((prev) => prev + 1)
+      loadViajes()
     } catch (error: any) {
       showToast(error.message || "Error al cancelar el viaje", "error")
     }
   }
 
-  const filteredViajes = viajes.filter((viaje) => {
-    return (
-      (filters.conductor === "" || viaje.conductor.toLowerCase().includes(filters.conductor.toLowerCase())) &&
-      (filters.combustible === "" || viaje.combustible === filters.combustible) &&
-      (filters.estado === "" || viaje.estado === filters.estado)
-    )
-  })
+  const handlePageChange = (page: number) => {
+    setPagination((prev) => ({
+      ...prev,
+      currentPage: page,
+    }))
+  }
+
+  const handleExportToExcel = () => {
+    try {
+      exportToExcel(viajes, "viajes_cisterna")
+      showToast("Datos exportados correctamente", "success")
+    } catch (error) {
+      console.error("Error exporting to Excel:", error)
+      showToast("Error al exportar los datos", "error")
+    }
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -125,25 +162,48 @@ const DashboardPage = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-medium text-gray-900">Viajes Registrados</h2>
 
-              <button
-                onClick={handleAddViaje}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <PlusIcon className="h-4 w-4 mr-1" />
-                Agregar Viaje
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                >
+                  <RefreshCwIcon className={`h-4 w-4 mr-1 ${isRefreshing ? "animate-spin" : ""}`} />
+                  Actualizar
+                </button>
+
+                <button
+                  onClick={handleExportToExcel}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <FileDownIcon className="h-4 w-4 mr-1" />
+                  Exportar a Excel
+                </button>
+
+                <button
+                  onClick={handleAddViaje}
+                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <PlusIcon className="h-4 w-4 mr-1" />
+                  Agregar Viaje
+                </button>
+              </div>
             </div>
+
+            <DashboardStats refreshTrigger={refreshTrigger} />
 
             {isLoading ? (
               <div className="bg-white shadow overflow-hidden sm:rounded-lg p-8">
                 <LoadingSpinner />
               </div>
             ) : (
-              <ViajeTable
-                viajes={filteredViajes}
-                isLoading={isLoading}
-                onEdit={handleEditViaje}
-                onCancel={handleCancelViaje}
+              <ViajeTable viajes={viajes} isLoading={isLoading} onEdit={handleEditViaje} onCancel={handleCancelViaje} />
+            )}
+            {!isLoading && viajes.length > 0 && (
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                onPageChange={handlePageChange}
               />
             )}
           </div>

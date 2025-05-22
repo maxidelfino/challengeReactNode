@@ -11,8 +11,8 @@ export interface Viaje {
 }
 
 export interface CancelResponse {
-  message: string;
-  viaje: Viaje;
+  message: string
+  viaje: Viaje
 }
 
 export interface User {
@@ -25,4 +25,13 @@ export interface LoginResponse {
   message: string
   user: User
   token: string
+}
+
+export interface ViajeStats {
+  total: number
+  enTransito: number
+  finalizados: number
+  cancelados: number
+  totalLitros: number
+  combustibles: Record<string, number>
 }

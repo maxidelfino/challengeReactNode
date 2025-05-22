@@ -1,9 +1,8 @@
 import type { Viaje } from "../types"
 
-// Mock data for viajes
 export const mockViajes: Viaje[] = [
   {
-    id: "1",
+    _id: "1",
     camion: "CAM-001",
     conductor: "Juan Pérez",
     origen: "Buenos Aires",
@@ -14,7 +13,7 @@ export const mockViajes: Viaje[] = [
     estado: "En tránsito",
   },
   {
-    id: "2",
+    _id: "2",
     camion: "CAM-002",
     conductor: "María López",
     origen: "Rosario",
@@ -25,7 +24,7 @@ export const mockViajes: Viaje[] = [
     estado: "Finalizado",
   },
   {
-    id: "3",
+    _id: "3",
     camion: "CAM-003",
     conductor: "Carlos Rodríguez",
     origen: "Córdoba",
@@ -36,7 +35,7 @@ export const mockViajes: Viaje[] = [
     estado: "Cancelado",
   },
   {
-    id: "4",
+    _id: "4",
     camion: "CAM-004",
     conductor: "Ana Martínez",
     origen: "Mendoza",
@@ -47,7 +46,7 @@ export const mockViajes: Viaje[] = [
     estado: "En tránsito",
   },
   {
-    id: "5",
+    _id: "5",
     camion: "CAM-005",
     conductor: "Roberto Gómez",
     origen: "La Plata",
@@ -58,7 +57,7 @@ export const mockViajes: Viaje[] = [
     estado: "En tránsito",
   },
   {
-    id: "6",
+    _id: "6",
     camion: "CAM-006",
     conductor: "Laura Sánchez",
     origen: "Salta",
@@ -69,7 +68,7 @@ export const mockViajes: Viaje[] = [
     estado: "Finalizado",
   },
   {
-    id: "7",
+    _id: "7",
     camion: "CAM-007",
     conductor: "Diego Fernández",
     origen: "Neuquén",
@@ -81,8 +80,6 @@ export const mockViajes: Viaje[] = [
   },
 ]
 
-// Available combustibles
 export const combustibles = ["Diésel", "Nafta", "GNC"]
 
-// Available estados
 export const estados = ["En tránsito", "Finalizado", "Cancelado"]

@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronUpIcon, ChevronDownIcon, EditIcon, XCircleIcon } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { ChevronUpIcon, ChevronDownIcon, EditIcon, XCircleIcon, EyeIcon } from "lucide-react"
 import StatusBadge from "./StatusBadge"
 import type { Viaje } from "../types"
 
@@ -15,6 +16,8 @@ interface ViajeTableProps {
 const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) => {
   const [sortField, setSortField] = useState<keyof Viaje>("fecha_salida")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
+
+  const navigate = useNavigate()
 
   const handleSort = (field: keyof Viaje) => {
     if (sortField === field) {
@@ -181,6 +184,14 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end space-x-2">
+                    <button
+                      onClick={() => navigate(`/viaje/${viaje._id}`)}
+                      className="text-gray-600 hover:text-gray-900"
+                    >
+                      <EyeIcon className="h-5 w-5" />
+                      <span className="sr-only">Ver detalle</span>
+                    </button>
+
                     <button
                       onClick={() => onEdit(viaje)}
                       disabled={viaje.estado === "Cancelado"}

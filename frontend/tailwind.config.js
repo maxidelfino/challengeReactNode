@@ -5,7 +5,7 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#2563EB", // blue-600
+          DEFAULT: "#2563EB",
           50: "#EFF6FF",
           100: "#DBEAFE",
           200: "#BFDBFE",
@@ -19,7 +19,7 @@ export default {
           950: "#172554",
         },
         secondary: {
-          DEFAULT: "#F97316", // orange-500
+          DEFAULT: "#F97316",
           50: "#FFF7ED",
           100: "#FFEDD5",
           200: "#FED7AA",

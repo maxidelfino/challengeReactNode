@@ -1,4 +1,5 @@
 import type { Viaje, LoginResponse, CancelResponse } from "../types"
+import type { ViajeStats } from "../types"
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api"
 
@@ -32,8 +33,34 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
   return handleResponse(response)
 }
 
-export const fetchViajes = async (): Promise<Viaje[]> => {
-  const response = await fetch(`${API_URL}/viajes`, {
+export const fetchViajes = async (
+  page = 1,
+  limit = 10,
+  filters: { conductor?: string; combustible?: string; estado?: string } = {},
+): Promise<{ viajes: Viaje[]; total: number; pages: number }> => {
+  let url = `${API_URL}/viajes?page=${page}&limit=${limit}`
+
+  if (filters.conductor) {
+    url += `&conductor=${encodeURIComponent(filters.conductor)}`
+  }
+
+  if (filters.combustible) {
+    url += `&combustible=${encodeURIComponent(filters.combustible)}`
+  }
+
+  if (filters.estado) {
+    url += `&estado=${encodeURIComponent(filters.estado)}`
+  }
+
+  const response = await fetch(url, {
+    headers: createAuthHeaders(),
+  })
+
+  return handleResponse(response)
+}
+
+export const fetchViajesStats = async (): Promise<ViajeStats> => {
+  const response = await fetch(`${API_URL}/viajes/stats`, {
     headers: createAuthHeaders(),
   })
 
@@ -85,7 +112,15 @@ export const cancelViaje = async (id: string): Promise<Viaje> => {
     headers: createAuthHeaders(),
   })
 
-  const data = await handleResponse(response) as CancelResponse;
+  const data = (await handleResponse(response)) as CancelResponse
 
-  return data.viaje;
+  return data.viaje
+}
+
+export const fetchViajeById = async (id: string): Promise<Viaje> => {
+  const response = await fetch(`${API_URL}/viajes/${id}`, {
+    headers: createAuthHeaders(),
+  })
+
+  return handleResponse(response)
 }

@@ -33,29 +33,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const token = localStorage.getItem("token")
-    const storedUser = localStorage.getItem("user")
+  const isTokenValid = (token: string): boolean => {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]))
+      return payload.exp * 1000 > Date.now()
+    } catch (e) {
+      console.error("Error parsing token:", e)
+      return false
+    }
+  }
 
-    if (token && storedUser) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]))
-        const isExpired = payload.exp * 1000 < Date.now()
+  const loadUserFromStorage = () => {
+    try {
+      const token = localStorage.getItem("token")
+      const storedUser = localStorage.getItem("user")
 
-        if (isExpired) {
-          localStorage.removeItem("token")
-          localStorage.removeItem("user")
-        } else {
-          setUser(JSON.parse(storedUser))
-        }
-      } catch (e) {
+      if (token && storedUser && isTokenValid(token)) {
+        setUser(JSON.parse(storedUser))
+      } else {
         localStorage.removeItem("token")
         localStorage.removeItem("user")
-        console.error("Error parsing token:", e)
+        setUser(null)
       }
+    } catch (e) {
+      localStorage.removeItem("token")
+      localStorage.removeItem("user")
+      setUser(null)
+      console.error("Error loading user from storage:", e)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadUserFromStorage()
+  }, [])
+
+  useEffect(() => {
+    const handleFocus = () => {
+      loadUserFromStorage()
     }
 
-    setIsLoading(false)
+    window.addEventListener("focus", handleFocus)
+    return () => {
+      window.removeEventListener("focus", handleFocus)
+    }
   }, [])
 
   const login = async (email: string, password: string) => {

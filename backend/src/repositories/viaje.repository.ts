@@ -1,7 +1,33 @@
-import { IViaje, Viaje } from '../models/Viaje';
+import { type IViaje, Viaje } from "../models/Viaje";
 
 export class ViajeRepository {
-  async findAll(): Promise<IViaje[]> {
+  async findAll(
+    page = 1,
+    limit = 10,
+    filters: { conductor?: string; combustible?: string; estado?: string } = {}
+  ): Promise<{ viajes: IViaje[]; total: number; pages: number }> {
+    const query: Record<string, any> = {};
+    if (filters.conductor) {
+      query.conductor = { $regex: filters.conductor, $options: "i" };
+    }
+    if (filters.combustible) {
+      query.combustible = filters.combustible;
+    }
+    if (filters.estado) {
+      query.estado = filters.estado;
+    }
+
+    const total = await Viaje.countDocuments(query);
+
+    const skip = (page - 1) * limit;
+    const pages = Math.ceil(total / limit);
+
+    const viajes = await Viaje.find(query).skip(skip).limit(limit).exec();
+
+    return { viajes, total, pages };
+  }
+
+  async findAllWithoutPagination(): Promise<IViaje[]> {
     return Viaje.find().exec();
   }
 
@@ -19,6 +45,10 @@ export class ViajeRepository {
   }
 
   async cancel(id: string): Promise<IViaje | null> {
-    return Viaje.findByIdAndUpdate(id, { estado: 'Cancelado' }, { new: true }).exec();
+    return Viaje.findByIdAndUpdate(
+      id,
+      { estado: "Cancelado" },
+      { new: true }
+    ).exec();
   }
 }
