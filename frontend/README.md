@@ -65,4 +65,9 @@ Backend API: http://localhost:4000/api
 ---
 
 ## 📸 Imágenes
-[addTravel.png](./assets/addTravel.png)
+
+<img width="1470" alt="register" src="https://github.com/user-attachments/assets/7e2a47e9-0bce-4e0f-bcab-569f9b7d2c9e" />
+<img width="1470" alt="login" src="https://github.com/user-attachments/assets/37802c25-74bf-47fa-800e-60511b0ecbfc" />
+<img width="1459" alt="dashboard" src="https://github.com/user-attachments/assets/0eb76c5a-9dee-409d-ad4a-f1806bd0cdea" />
+<img width="1462" alt="addTravel" src="https://github.com/user-attachments/assets/4f9eeb1c-05f2-4275-928d-268c88a47df3" />
+<img width="1463" alt="detailTravel" src="https://github.com/user-attachments/assets/bb701c99-d3bd-4e90-af47-dd42b1db914f" />
