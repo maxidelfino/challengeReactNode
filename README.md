@@ -51,14 +51,19 @@ Esta plataforma fullstack permite gestionar el despacho de camiones cisterna par
 
 2. Iniciar los contenedores:
    ```bash
-   docker-compose up --build
+   docker-compose up -d --build
    ```
 
-3. Acceder a la aplicación:
+3. Ejecutar seed de datos para:
+   ```bash
+   docker exec -it backend npm run seed
+   ```
+
+4. Acceder a la aplicación:
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:4000/api
 
-4. Credenciales de prueba:
+5. Credenciales de prueba:
    - Email: admin@example.com
    - Contraseña: 123456
 
@@ -158,3 +163,10 @@ Para más detalles, consulte la [documentación completa de la API](./backend/do
 - Los viajes eliminados cambian su estado a "Cancelado" (soft delete)
 - No se pueden registrar viajes con más de 30,000 litros
 - La fecha de salida no puede estar en el pasado
+
+A este proyecto, agregale un chatbot impulsado con inteligencia artificial. Conectate a alguna API de alguna IA que nos permita preguntarle al chat cuestiones sobre la tabla de viajes. Preguntas como "cuantos viajes realizamos en el mes de marzo" o como "Cuantas viajes realizamos con GNC"
+
+Intentemos implementar esta nueva funcionalidad
+
+
+- revisar doc, falta decir que debemos levantar docker y luego correr los seeders

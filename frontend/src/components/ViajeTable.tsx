@@ -2,7 +2,13 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { ChevronUpIcon, ChevronDownIcon, EditIcon, XCircleIcon, EyeIcon } from "lucide-react"
+import {
+  ChevronUpIcon,
+  ChevronDownIcon,
+  EditIcon,
+  XCircleIcon,
+  EyeIcon,
+} from "lucide-react"
 import StatusBadge from "./StatusBadge"
 import Tooltip from "./Tooltip"
 import type { Viaje } from "../types"
@@ -14,7 +20,12 @@ interface ViajeTableProps {
   onCancel: (id: string) => void
 }
 
-const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) => {
+const ViajeTable = ({
+  viajes,
+  isLoading,
+  onEdit,
+  onCancel,
+}: ViajeTableProps) => {
   const [sortField, setSortField] = useState<keyof Viaje>("fecha_salida")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
   const [truncatedCells, setTruncatedCells] = useState<Record<string, boolean>>({})
@@ -95,7 +106,9 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
   if (viajes.length === 0) {
     return (
       <div className="bg-white shadow overflow-hidden sm:rounded-lg p-8 text-center">
-        <p className="text-gray-500">No hay viajes registrados o que coincidan con los filtros.</p>
+        <p className="text-gray-500">
+          No hay viajes registrados o que coincidan con los filtros.
+        </p>
       </div>
     )
   }
@@ -107,114 +120,53 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("camion")}
-                >
-                  <div className="flex items-center">
-                    Camión
-                    <SortIcon field="camion" />
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("conductor")}
-                >
-                  <div className="flex items-center">
-                    Conductor
-                    <SortIcon field="conductor" />
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("origen")}
-                >
-                  <div className="flex items-center">
-                    Origen
-                    <SortIcon field="origen" />
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("destino")}
-                >
-                  <div className="flex items-center">
-                    Destino
-                    <SortIcon field="destino" />
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("combustible")}
-                >
-                  <div className="flex items-center">
-                    Combustible
-                    <SortIcon field="combustible" />
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("cantidad_litros")}
-                >
-                  <div className="flex items-center">
-                    Litros
-                    <SortIcon field="cantidad_litros" />
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("fecha_salida")}
-                >
-                  <div className="flex items-center">
-                    Fecha Salida
-                    <SortIcon field="fecha_salida" />
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("estado")}
-                >
-                  <div className="flex items-center">
-                    Estado
-                    <SortIcon field="estado" />
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50"
-                >
+                {[
+                  { key: "camion", label: "Camión", maxW: "max-w-[80px]" },
+                  { key: "conductor", label: "Conductor", maxW: "max-w-[120px]" },
+                  { key: "origen", label: "Origen", maxW: "max-w-[100px]" },
+                  { key: "destino", label: "Destino", maxW: "max-w-[100px]" },
+                  { key: "combustible", label: "Combustible", maxW: "max-w-[80px]" },
+                  { key: "cantidad_litros", label: "Litros" },
+                  { key: "fecha_salida", label: "Fecha Salida" },
+                  { key: "estado", label: "Estado" },
+                ].map((col) => (
+                  <th
+                    key={col.key}
+                    scope="col"
+                    className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort(col.key as keyof Viaje)}
+                  >
+                    <div className="flex items-center">
+                      {col.label}
+                      <SortIcon field={col.key as keyof Viaje} />
+                    </div>
+                  </th>
+                ))}
+                <th className="px-6 py-2.5 text-right text-xs font-medium text-gray-500 uppercase sticky right-0 bg-gray-50">
                   Acciones
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {sortedViajes.map((viaje, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <TruncatedCell content={viaje.camion} maxWidth="max-w-[80px]" />
+              {sortedViajes.map((viaje) => (
+                <tr key={viaje._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900 truncate max-w-[80px]">
+                    {viaje.camion}
+                  </td>
+                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 truncate max-w-[120px]">
+                    {viaje.conductor}
+                  </td>
+                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 truncate max-w-[100px]">
+                    {viaje.origen}
+                  </td>
+                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 truncate max-w-[100px]">
+                    {viaje.destino}
+                  </td>
+                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 truncate max-w-[80px]">
+                    {viaje.combustible}
                   </td>
                   <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
-                    <TruncatedCell content={viaje.conductor} maxWidth="max-w-[120px]" />
-                  </td>
-                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
-                    <TruncatedCell content={viaje.origen} maxWidth="max-w-[100px]" />
-                  </td>
-                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
-                    <TruncatedCell content={viaje.destino} maxWidth="max-w-[100px]" />
-                  </td>
-                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
-                    <TruncatedCell content={viaje.combustible} maxWidth="max-w-[80px]" />
-                  </td>
-                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
-                    {viaje.cantidad_litros?.toLocaleString()} L
+                    {viaje.cantidad_litros.toLocaleString()} L
                   </td>
                   <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
                     {new Date(viaje.fecha_salida).toLocaleDateString("es-ES", {
