@@ -33,6 +33,18 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
   return handleResponse(response)
 }
 
+export const registerUser = async (email: string, password: string, role: string): Promise<LoginResponse> => {
+  const response = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password, role }),
+  })
+
+  return handleResponse(response)
+}
+
 export const fetchViajes = async (
   page = 1,
   limit = 10,

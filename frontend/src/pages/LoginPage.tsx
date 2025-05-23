@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { TruckIcon } from "lucide-react"
 import { useToast } from "../context/ToastContext"
@@ -96,8 +96,15 @@ const LoginPage = () => {
             </button>
           </div>
 
-          <div className="text-sm text-center">
-            <p className="text-gray-600">Demo: admin@example.com / 123456</p>
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
+                ¿No tienes cuenta? Regístrate
+              </Link>
+            </div>
+            <div className="text-sm">
+              <p className="text-gray-600">Demo: admin@example.com / 123456</p>
+            </div>
           </div>
         </form>
       </div>
