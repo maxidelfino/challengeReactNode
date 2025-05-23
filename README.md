@@ -4,7 +4,7 @@
 
 Esta plataforma fullstack permite gestionar el despacho de camiones cisterna para la distribución de combustibles. Ofrece un sistema de autenticación seguro y un dashboard administrativo donde los usuarios pueden visualizar, registrar y dar seguimiento en tiempo real a los viajes, conductores, combustibles, origen y destino de cada despacho.
 
-![Dashboard](./assets/addTravel.png)
+<img width="1459" alt="dashboard" src="https://github.com/user-attachments/assets/c71dbd3e-51ab-47d9-b713-6693ee6bdf0c" />
 
 ## 🎯 Características Principales
 
