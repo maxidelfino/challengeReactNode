@@ -127,7 +127,6 @@ const DashboardPage = () => {
       setIsExporting(true)
       showToast("Preparando exportación...", "info")
 
-      // Obtener todos los viajes con los filtros aplicados
       const allViajes = await fetchAllViajes(filters)
 
       if (allViajes.length === 0) {

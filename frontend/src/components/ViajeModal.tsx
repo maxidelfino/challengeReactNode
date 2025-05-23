@@ -1,11 +1,12 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { XIcon } from "lucide-react"
 import type { Viaje } from "../types"
 import { combustibles } from "../utils/mockData"
+import { viajeSchema } from "../validations/schemas"
+import { validateWithJoi, validateField } from "../utils/validation"
 
 interface ViajeModalProps {
   isOpen: boolean
@@ -27,6 +28,7 @@ const ViajeModal = ({ isOpen, onClose, onSave, viaje }: ViajeModalProps) => {
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     if (viaje) {
@@ -51,55 +53,60 @@ const ViajeModal = ({ isOpen, onClose, onSave, viaje }: ViajeModalProps) => {
     }
 
     setErrors({})
+    setTouchedFields({})
   }, [viaje, isOpen])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
+    const processedValue = name === "cantidad_litros" ? Number.parseInt(value) || 0 : value
 
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "cantidad_litros" ? Number.parseInt(value) : value,
+      [name]: processedValue,
     }))
 
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[name]
-        return newErrors
-      })
+    if (touchedFields[name]) {
+      const fieldError = validateField(viajeSchema, name, processedValue)
+      setErrors((prev) => ({
+        ...prev,
+        [name]: fieldError || "",
+      }))
     }
   }
 
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    const processedValue = name === "cantidad_litros" ? Number.parseInt(value) || 0 : value
+
+    setTouchedFields((prev) => ({
+      ...prev,
+      [name]: true,
+    }))
+
+    const fieldError = validateField(viajeSchema, name, processedValue)
+    setErrors((prev) => ({
+      ...prev,
+      [name]: fieldError || "",
+    }))
+  }
+
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
-
-    if (!formData.camion) newErrors.camion = "El camión es obligatorio"
-    if (!formData.conductor) newErrors.conductor = "El conductor es obligatorio"
-    if (!formData.origen) newErrors.origen = "El origen es obligatorio"
-    if (!formData.destino) newErrors.destino = "El destino es obligatorio"
-    if (!formData.combustible) newErrors.combustible = "El combustible es obligatorio"
-
-    if (!formData.cantidad_litros) {
-      newErrors.cantidad_litros = "La cantidad de litros es obligatoria"
-    } else if (formData.cantidad_litros <= 0) {
-      newErrors.cantidad_litros = "La cantidad debe ser mayor a 0"
-    } else if (formData.cantidad_litros > 30000) {
-      newErrors.cantidad_litros = "No se pueden registrar más de 30.000 litros"
+    const dataToValidate = {
+      ...formData,
+      fecha_salida: formData.fecha_salida ? new Date(formData.fecha_salida) : undefined,
     }
 
-    if (!formData.fecha_salida) {
-      newErrors.fecha_salida = "La fecha de salida es obligatoria"
-    } else {
-      const fechaSalida = new Date(formData.fecha_salida)
-      const now = new Date()
+    const validation = validateWithJoi(viajeSchema, dataToValidate)
+    setErrors(validation.errors)
 
-      if (fechaSalida < now) {
-        newErrors.fecha_salida = "La fecha de salida no puede ser en el pasado"
-      }
-    }
+    const allFields = Object.keys(formData)
+    const newTouchedFields: Record<string, boolean> = {}
+    allFields.forEach((field) => {
+      newTouchedFields[field] = true
+    })
+    setTouchedFields(newTouchedFields)
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return validation.isValid
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -163,7 +170,7 @@ const ViajeModal = ({ isOpen, onClose, onSave, viaje }: ViajeModalProps) => {
             <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="camion" className="block text-sm font-medium text-gray-700">
-                  Camión
+                  Camión *
                 </label>
                 <input
                   type="text"
@@ -171,14 +178,20 @@ const ViajeModal = ({ isOpen, onClose, onSave, viaje }: ViajeModalProps) => {
                   id="camion"
                   value={formData.camion}
                   onChange={handleChange}
-                  className={`mt-1 block w-full border ${errors.camion ? "border-red-300" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  onBlur={handleBlur}
+                  placeholder="Ej: CAM-001"
+                  className={`mt-1 block w-full border ${
+                    errors.camion && touchedFields.camion
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                      : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-1 sm:text-sm`}
                 />
-                {errors.camion && <p className="mt-1 text-sm text-red-600">{errors.camion}</p>}
+                {errors.camion && touchedFields.camion && <p className="mt-1 text-sm text-red-600">{errors.camion}</p>}
               </div>
 
               <div>
                 <label htmlFor="conductor" className="block text-sm font-medium text-gray-700">
-                  Conductor
+                  Conductor *
                 </label>
                 <input
                   type="text"
@@ -186,14 +199,22 @@ const ViajeModal = ({ isOpen, onClose, onSave, viaje }: ViajeModalProps) => {
                   id="conductor"
                   value={formData.conductor}
                   onChange={handleChange}
-                  className={`mt-1 block w-full border ${errors.conductor ? "border-red-300" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  onBlur={handleBlur}
+                  placeholder="Ej: Juan Pérez"
+                  className={`mt-1 block w-full border ${
+                    errors.conductor && touchedFields.conductor
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                      : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-1 sm:text-sm`}
                 />
-                {errors.conductor && <p className="mt-1 text-sm text-red-600">{errors.conductor}</p>}
+                {errors.conductor && touchedFields.conductor && (
+                  <p className="mt-1 text-sm text-red-600">{errors.conductor}</p>
+                )}
               </div>
 
               <div>
                 <label htmlFor="origen" className="block text-sm font-medium text-gray-700">
-                  Origen
+                  Origen *
                 </label>
                 <input
                   type="text"
@@ -201,14 +222,20 @@ const ViajeModal = ({ isOpen, onClose, onSave, viaje }: ViajeModalProps) => {
                   id="origen"
                   value={formData.origen}
                   onChange={handleChange}
-                  className={`mt-1 block w-full border ${errors.origen ? "border-red-300" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  onBlur={handleBlur}
+                  placeholder="Ej: Buenos Aires"
+                  className={`mt-1 block w-full border ${
+                    errors.origen && touchedFields.origen
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                      : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-1 sm:text-sm`}
                 />
-                {errors.origen && <p className="mt-1 text-sm text-red-600">{errors.origen}</p>}
+                {errors.origen && touchedFields.origen && <p className="mt-1 text-sm text-red-600">{errors.origen}</p>}
               </div>
 
               <div>
                 <label htmlFor="destino" className="block text-sm font-medium text-gray-700">
-                  Destino
+                  Destino *
                 </label>
                 <input
                   type="text"
@@ -216,21 +243,34 @@ const ViajeModal = ({ isOpen, onClose, onSave, viaje }: ViajeModalProps) => {
                   id="destino"
                   value={formData.destino}
                   onChange={handleChange}
-                  className={`mt-1 block w-full border ${errors.destino ? "border-red-300" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  onBlur={handleBlur}
+                  placeholder="Ej: Córdoba"
+                  className={`mt-1 block w-full border ${
+                    errors.destino && touchedFields.destino
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                      : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-1 sm:text-sm`}
                 />
-                {errors.destino && <p className="mt-1 text-sm text-red-600">{errors.destino}</p>}
+                {errors.destino && touchedFields.destino && (
+                  <p className="mt-1 text-sm text-red-600">{errors.destino}</p>
+                )}
               </div>
 
               <div>
                 <label htmlFor="combustible" className="block text-sm font-medium text-gray-700">
-                  Combustible
+                  Combustible *
                 </label>
                 <select
                   name="combustible"
                   id="combustible"
                   value={formData.combustible}
                   onChange={handleChange}
-                  className={`mt-1 block w-full border ${errors.combustible ? "border-red-300" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  onBlur={handleBlur}
+                  className={`mt-1 block w-full border ${
+                    errors.combustible && touchedFields.combustible
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                      : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-1 sm:text-sm`}
                 >
                   {combustibles.map((combustible) => (
                     <option key={combustible} value={combustible}>
@@ -238,12 +278,14 @@ const ViajeModal = ({ isOpen, onClose, onSave, viaje }: ViajeModalProps) => {
                     </option>
                   ))}
                 </select>
-                {errors.combustible && <p className="mt-1 text-sm text-red-600">{errors.combustible}</p>}
+                {errors.combustible && touchedFields.combustible && (
+                  <p className="mt-1 text-sm text-red-600">{errors.combustible}</p>
+                )}
               </div>
 
               <div>
                 <label htmlFor="cantidad_litros" className="block text-sm font-medium text-gray-700">
-                  Cantidad de Litros
+                  Cantidad de Litros *
                 </label>
                 <input
                   type="number"
@@ -253,14 +295,22 @@ const ViajeModal = ({ isOpen, onClose, onSave, viaje }: ViajeModalProps) => {
                   max="30000"
                   value={formData.cantidad_litros}
                   onChange={handleChange}
-                  className={`mt-1 block w-full border ${errors.cantidad_litros ? "border-red-300" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  onBlur={handleBlur}
+                  placeholder="Ej: 15000"
+                  className={`mt-1 block w-full border ${
+                    errors.cantidad_litros && touchedFields.cantidad_litros
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                      : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-1 sm:text-sm`}
                 />
-                {errors.cantidad_litros && <p className="mt-1 text-sm text-red-600">{errors.cantidad_litros}</p>}
+                {errors.cantidad_litros && touchedFields.cantidad_litros && (
+                  <p className="mt-1 text-sm text-red-600">{errors.cantidad_litros}</p>
+                )}
               </div>
 
               <div>
                 <label htmlFor="fecha_salida" className="block text-sm font-medium text-gray-700">
-                  Fecha de Salida
+                  Fecha de Salida *
                 </label>
                 <input
                   type="datetime-local"
@@ -268,9 +318,16 @@ const ViajeModal = ({ isOpen, onClose, onSave, viaje }: ViajeModalProps) => {
                   id="fecha_salida"
                   value={formData.fecha_salida}
                   onChange={handleChange}
-                  className={`mt-1 block w-full border ${errors.fecha_salida ? "border-red-300" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  onBlur={handleBlur}
+                  className={`mt-1 block w-full border ${
+                    errors.fecha_salida && touchedFields.fecha_salida
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                      : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  } rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-1 sm:text-sm`}
                 />
-                {errors.fecha_salida && <p className="mt-1 text-sm text-red-600">{errors.fecha_salida}</p>}
+                {errors.fecha_salida && touchedFields.fecha_salida && (
+                  <p className="mt-1 text-sm text-red-600">{errors.fecha_salida}</p>
+                )}
               </div>
 
               {viaje && (
@@ -283,6 +340,7 @@ const ViajeModal = ({ isOpen, onClose, onSave, viaje }: ViajeModalProps) => {
                     id="estado"
                     value={formData.estado}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   >
                     <option value="En tránsito">En tránsito</option>

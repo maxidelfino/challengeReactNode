@@ -1,42 +1,72 @@
 "use client"
 
+import type React from "react"
+
 import { useState, type FormEvent } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { TruckIcon } from "lucide-react"
 import { useToast } from "../context/ToastContext"
 import { registerUser } from "../utils/api"
+import { registerSchema } from "../validations/schemas"
+import { validateWithJoi, validateField } from "../utils/validation"
 
 const RegisterPage = () => {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [role, setRole] = useState("user")
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "user",
+  })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({})
   const navigate = useNavigate()
   const { showToast } = useToast()
 
-  const validateForm = () => {
-    const errors: Record<string, string> = {}
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
 
-    if (!email) {
-      errors.email = "El correo electrónico es obligatorio"
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      errors.email = "El correo electrónico no es válido"
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+
+    if (touchedFields[name]) {
+      const fieldError = validateField(registerSchema, name, value)
+      setErrors((prev) => ({
+        ...prev,
+        [name]: fieldError || "",
+      }))
     }
+  }
 
-    if (!password) {
-      errors.password = "La contraseña es obligatoria"
-    } else if (password.length < 6) {
-      errors.password = "La contraseña debe tener al menos 6 caracteres"
-    }
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
 
-    if (password !== confirmPassword) {
-      errors.confirmPassword = "Las contraseñas no coinciden"
-    }
+    setTouchedFields((prev) => ({
+      ...prev,
+      [name]: true,
+    }))
 
-    setFormErrors(errors)
-    return Object.keys(errors).length === 0
+    const fieldError = validateField(registerSchema, name, value)
+    setErrors((prev) => ({
+      ...prev,
+      [name]: fieldError || "",
+    }))
+  }
+
+  const validateForm = (): boolean => {
+    const validation = validateWithJoi(registerSchema, formData)
+    setErrors(validation.errors)
+
+    const allFields = Object.keys(formData)
+    const newTouchedFields: Record<string, boolean> = {}
+    allFields.forEach((field) => {
+      newTouchedFields[field] = true
+    })
+    setTouchedFields(newTouchedFields)
+
+    return validation.isValid
   }
 
   const handleSubmit = async (e: FormEvent) => {
@@ -47,17 +77,16 @@ const RegisterPage = () => {
     setIsSubmitting(true)
 
     try {
-      const response = await registerUser(email, password, role)
+      const response = await registerUser(formData.email, formData.password, formData.role)
 
-      // Guardar token y usuario en localStorage
       localStorage.setItem("token", response.token)
       localStorage.setItem("user", JSON.stringify(response.user))
 
       showToast("Usuario registrado correctamente", "success")
       navigate("/")
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error al registrar:", err)
-      showToast("Error al registrar usuario. El correo podría estar en uso.", "error")
+      showToast(err.message || "Error al registrar usuario. El correo podría estar en uso.", "error")
     } finally {
       setIsSubmitting(false)
     }
@@ -82,72 +111,97 @@ const RegisterPage = () => {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="space-y-4">
             <div>
-              <label htmlFor="email-address" className="sr-only">
-                Correo electrónico
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Correo electrónico *
               </label>
               <input
-                id="email-address"
+                id="email"
                 name="email"
                 type="email"
                 autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Correo electrónico"
+                value={formData.email}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="ejemplo@correo.com"
+                className={`mt-1 block w-full px-3 py-3 border ${
+                  errors.email && touchedFields.email
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                } rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm`}
               />
-              {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
+              {errors.email && touchedFields.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
             </div>
+
             <div>
-              <label htmlFor="password" className="sr-only">
-                Contraseña
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Contraseña *
               </label>
               <input
                 id="password"
                 name="password"
                 type="password"
                 autoComplete="new-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Contraseña"
+                value={formData.password}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Mínimo 6 caracteres"
+                className={`mt-1 block w-full px-3 py-3 border ${
+                  errors.password && touchedFields.password
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                } rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm`}
               />
-              {formErrors.password && <p className="text-red-500 text-xs mt-1">{formErrors.password}</p>}
+              {errors.password && touchedFields.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
             </div>
+
             <div>
-              <label htmlFor="confirm-password" className="sr-only">
-                Confirmar contraseña
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                Confirmar contraseña *
               </label>
               <input
-                id="confirm-password"
+                id="confirmPassword"
                 name="confirmPassword"
                 type="password"
                 autoComplete="new-password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Confirmar contraseña"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="Repita su contraseña"
+                className={`mt-1 block w-full px-3 py-3 border ${
+                  errors.confirmPassword && touchedFields.confirmPassword
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                } rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm`}
               />
-              {formErrors.confirmPassword && <p className="text-red-500 text-xs mt-1">{formErrors.confirmPassword}</p>}
+              {errors.confirmPassword && touchedFields.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+              )}
             </div>
+
             <div>
-              <label htmlFor="role" className="sr-only">
-                Rol
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                Rol *
               </label>
               <select
                 id="role"
                 name="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                value={formData.role}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={`mt-1 block w-full px-3 py-3 border ${
+                  errors.role && touchedFields.role
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                } rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm`}
               >
                 <option value="user">Usuario</option>
                 <option value="admin">Administrador</option>
               </select>
+              {errors.role && touchedFields.role && <p className="mt-1 text-sm text-red-600">{errors.role}</p>}
             </div>
           </div>
 
@@ -155,7 +209,7 @@ const RegisterPage = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Registrando..." : "Registrarse"}
             </button>

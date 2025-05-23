@@ -1,54 +1,68 @@
-# React + TypeScript + Vite
+# 🚛 Plataforma de Gestión de Viajes de Camiones Cisterna
+Este proyecto es una solución fullstack desarrollada para una empresa de distribución de combustibles. Permite a los administradores autenticar su acceso, registrar y monitorear los viajes de camiones cisterna en tiempo real.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
 
-Currently, two official plugins are available:
+## 🔧 Tecnologías Utilizadas
+- Frontend: React + TypeScript + TailwindCSS + React Router DOM + Axios
+- Autenticación: JWT
+- Infraestructura: Docker
+- Otros: Joi (validaciones), XLSX (descarga de reportes), ESLint (linting)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 🔐 Autenticación
+- Formulario de inicio de sesión con email y contraseña.
+- Emisión y almacenamiento de token JWT en localStorage.
+- Protección de rutas frontend para evitar accesos no autorizados.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 📊 Dashboard Administrativo
+- Tabla interactiva de viajes (ordenar y filtrar por conductor, combustible, estado).
+- Modal para crear nuevos viajes.
+- Edición y cancelación de viajes.
+- Visualización de estadísticas.
+- Actualización en tiempo real del estado del dashboard.
+
+---
+
+## 🐳 Uso con Docker
+**Requisitos Previos**
+- Docker y Docker Compose instalados
+
+**Comandos**
+```bash
+docker-compose up --build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+Frontend: http://localhost:5173
+Backend API: http://localhost:4000/api
 ```
+
+---
+
+## 📁 Estructura del Proyecto
+```bash
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── pages/
+│   │   ├── utils/
+│   │   ├── validations/
+│   │   └── App.tsx
+│   │   └── index.css
+│   │   └── main.tsx
+│   │   └── types.ts
+│   └── .env
+│   └── Dockerfile
+└── docker-compose.yml
+```
+
+---
+
+## 📸 Imágenes
+[addTravel.png](./assets/addTravel.png)

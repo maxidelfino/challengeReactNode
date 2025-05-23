@@ -28,7 +28,6 @@ export const getViajes = async (req: Request, res: Response) => {
   res.json(result);
 };
 
-// Agregar esta nueva función después de getViajes
 export const getAllViajes = async (req: Request, res: Response) => {
   try {
     const filters: Record<string, any> = {};
