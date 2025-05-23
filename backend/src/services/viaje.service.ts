@@ -21,8 +21,8 @@ export class ViajeService {
     return this.repo.findAll(page, limit, filters);
   }
 
-  async getAllViajes(): Promise<IViaje[]> {
-    return this.repo.findAllWithoutPagination();
+  async getAllViajes(filters?: Record<string, any>): Promise<IViaje[]> {
+    return this.repo.findAllWithoutPagination(filters);
   }
 
   async createViaje(data: Partial<IViaje>): Promise<IViaje> {

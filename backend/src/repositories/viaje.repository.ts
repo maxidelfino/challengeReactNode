@@ -27,8 +27,22 @@ export class ViajeRepository {
     return { viajes, total, pages };
   }
 
-  async findAllWithoutPagination(): Promise<IViaje[]> {
-    return Viaje.find().exec();
+  async findAllWithoutPagination(
+    filters: Record<string, any> = {}
+  ): Promise<IViaje[]> {
+    const query: Record<string, any> = {};
+
+    if (filters.conductor) {
+      query.conductor = filters.conductor;
+    }
+    if (filters.combustible) {
+      query.combustible = filters.combustible;
+    }
+    if (filters.estado) {
+      query.estado = filters.estado;
+    }
+
+    return Viaje.find(query).exec();
   }
 
   async findById(id: string): Promise<IViaje | null> {

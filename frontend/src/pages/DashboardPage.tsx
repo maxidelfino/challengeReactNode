@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext"
 import Sidebar from "../components/Sidebar"
 import ViajeTable from "../components/ViajeTable"
 import ViajeModal from "../components/ViajeModal"
-import { fetchViajes, updateViaje, createViaje, cancelViaje } from "../utils/api"
+import { fetchViajes, updateViaje, createViaje, cancelViaje, fetchAllViajes } from "../utils/api"
 import type { Viaje } from "../types"
 import { PlusIcon, LogOutIcon, FileDownIcon, RefreshCwIcon } from "lucide-react"
 import { useToast } from "../context/ToastContext"
@@ -27,6 +27,7 @@ const DashboardPage = () => {
   })
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   const { showToast } = useToast()
 
@@ -121,13 +122,31 @@ const DashboardPage = () => {
     }))
   }
 
-  const handleExportToExcel = () => {
+  const handleExportToExcel = async () => {
     try {
-      exportToExcel(viajes, "viajes_cisterna")
-      showToast("Datos exportados correctamente", "success")
+      setIsExporting(true)
+      showToast("Preparando exportación...", "info")
+
+      // Obtener todos los viajes con los filtros aplicados
+      const allViajes = await fetchAllViajes(filters)
+
+      if (allViajes.length === 0) {
+        showToast("No hay viajes para exportar con los filtros aplicados", "info")
+        return
+      }
+
+      const fileName =
+        filters.conductor || filters.combustible || filters.estado
+          ? "viajes_cisterna_filtrados"
+          : "viajes_cisterna_completo"
+
+      exportToExcel(allViajes, fileName)
+      showToast(`${allViajes.length} viajes exportados correctamente`, "success")
     } catch (error) {
       console.error("Error exporting to Excel:", error)
       showToast("Error al exportar los datos", "error")
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -174,10 +193,11 @@ const DashboardPage = () => {
 
                 <button
                   onClick={handleExportToExcel}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  disabled={isExporting}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                 >
-                  <FileDownIcon className="h-4 w-4 mr-1" />
-                  Exportar a Excel
+                  <FileDownIcon className={`h-4 w-4 mr-1 ${isExporting ? "animate-spin" : ""}`} />
+                  {isExporting ? "Exportando..." : "Exportar a Excel"}
                 </button>
 
                 <button

@@ -28,9 +28,28 @@ export const getViajes = async (req: Request, res: Response) => {
   res.json(result);
 };
 
-export const getAllViajes = async (_req: Request, res: Response) => {
-  const viajes = await service.getAllViajes();
-  res.json(viajes);
+// Agregar esta nueva función después de getViajes
+export const getAllViajes = async (req: Request, res: Response) => {
+  try {
+    const filters: Record<string, any> = {};
+
+    if (req.query.conductor) {
+      filters.conductor = { $regex: req.query.conductor, $options: "i" };
+    }
+
+    if (req.query.combustible) {
+      filters.combustible = req.query.combustible;
+    }
+
+    if (req.query.estado) {
+      filters.estado = req.query.estado;
+    }
+
+    const viajes = await service.getAllViajes(filters);
+    res.json(viajes);
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 export const createViaje = async (req: Request, res: Response) => {
@@ -38,12 +57,10 @@ export const createViaje = async (req: Request, res: Response) => {
     abortEarly: false,
   });
   if (error) {
-    res
-      .status(400)
-      .json({
-        message: "Datos inválidos",
-        errors: error.details.map((e) => e.message),
-      });
+    res.status(400).json({
+      message: "Datos inválidos",
+      errors: error.details.map((e) => e.message),
+    });
   }
   try {
     const newViaje = await service.createViaje(value);
@@ -58,12 +75,10 @@ export const updateViaje = async (req: Request, res: Response) => {
     abortEarly: false,
   });
   if (error) {
-    res
-      .status(400)
-      .json({
-        message: "Datos inválidos",
-        errors: error.details.map((e) => e.message),
-      });
+    res.status(400).json({
+      message: "Datos inválidos",
+      errors: error.details.map((e) => e.message),
+    });
   }
   try {
     const updatedViaje = await service.updateViaje(req.params.id, value);

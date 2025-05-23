@@ -136,3 +136,33 @@ export const fetchViajeById = async (id: string): Promise<Viaje> => {
 
   return handleResponse(response)
 }
+
+export const fetchAllViajes = async (
+  filters: { conductor?: string; combustible?: string; estado?: string } = {},
+): Promise<any[]> => {
+  let url = `${API_URL}/viajes/all`
+
+  const params = new URLSearchParams()
+
+  if (filters.conductor) {
+    params.append("conductor", filters.conductor)
+  }
+
+  if (filters.combustible) {
+    params.append("combustible", filters.combustible)
+  }
+
+  if (filters.estado) {
+    params.append("estado", filters.estado)
+  }
+
+  if (params.toString()) {
+    url += `?${params.toString()}`
+  }
+
+  const response = await fetch(url, {
+    headers: createAuthHeaders(),
+  })
+
+  return handleResponse(response)
+}
