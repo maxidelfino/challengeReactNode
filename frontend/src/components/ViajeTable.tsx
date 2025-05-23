@@ -68,153 +68,178 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
   return (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort("camion")}
-              >
-                <div className="flex items-center">
-                  Camión
-                  <SortIcon field="camion" />
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort("conductor")}
-              >
-                <div className="flex items-center">
-                  Conductor
-                  <SortIcon field="conductor" />
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort("origen")}
-              >
-                <div className="flex items-center">
-                  Origen
-                  <SortIcon field="origen" />
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort("destino")}
-              >
-                <div className="flex items-center">
-                  Destino
-                  <SortIcon field="destino" />
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort("combustible")}
-              >
-                <div className="flex items-center">
-                  Combustible
-                  <SortIcon field="combustible" />
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort("cantidad_litros")}
-              >
-                <div className="flex items-center">
-                  Litros
-                  <SortIcon field="cantidad_litros" />
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort("fecha_salida")}
-              >
-                <div className="flex items-center">
-                  Fecha Salida
-                  <SortIcon field="fecha_salida" />
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort("estado")}
-              >
-                <div className="flex items-center">
-                  Estado
-                  <SortIcon field="estado" />
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {sortedViajes.map((viaje, index) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{viaje.camion}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{viaje.conductor}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{viaje.origen}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{viaje.destino}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{viaje.combustible}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {viaje.cantidad_litros?.toLocaleString()} L
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(viaje.fecha_salida).toLocaleDateString("es-ES", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <StatusBadge estado={viaje.estado} />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end space-x-2">
-                    <button
-                      onClick={() => navigate(`/viaje/${viaje._id}`)}
-                      className="text-gray-600 hover:text-gray-900"
-                    >
-                      <EyeIcon className="h-5 w-5" />
-                      <span className="sr-only">Ver detalle</span>
-                    </button>
-
-                    <button
-                      onClick={() => onEdit(viaje)}
-                      disabled={viaje.estado === "Cancelado"}
-                      className="text-blue-600 hover:text-blue-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <EditIcon className="h-5 w-5" />
-                      <span className="sr-only">Editar</span>
-                    </button>
-
-                    <button
-                      onClick={() => onCancel(viaje._id)}
-                      disabled={viaje.estado === "Cancelado"}
-                      className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <XCircleIcon className="h-5 w-5" />
-                      <span className="sr-only">Cancelar</span>
-                    </button>
+        <div className="max-h-[600px] overflow-y-auto relative">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50 sticky top-0 z-10">
+              <tr>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("camion")}
+                >
+                  <div className="flex items-center">
+                    Camión
+                    <SortIcon field="camion" />
                   </div>
-                </td>
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("conductor")}
+                >
+                  <div className="flex items-center">
+                    Conductor
+                    <SortIcon field="conductor" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("origen")}
+                >
+                  <div className="flex items-center">
+                    Origen
+                    <SortIcon field="origen" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("destino")}
+                >
+                  <div className="flex items-center">
+                    Destino
+                    <SortIcon field="destino" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("combustible")}
+                >
+                  <div className="flex items-center">
+                    Combustible
+                    <SortIcon field="combustible" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("cantidad_litros")}
+                >
+                  <div className="flex items-center">
+                    Litros
+                    <SortIcon field="cantidad_litros" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("fecha_salida")}
+                >
+                  <div className="flex items-center">
+                    Fecha Salida
+                    <SortIcon field="fecha_salida" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("estado")}
+                >
+                  <div className="flex items-center">
+                    Estado
+                    <SortIcon field="estado" />
+                  </div>
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50"
+                >
+                  Acciones
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {sortedViajes.map((viaje, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <div className="truncate max-w-[100px]" title={viaje.camion}>
+                      {viaje.camion}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="truncate max-w-[150px]" title={viaje.conductor}>
+                      {viaje.conductor}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="truncate max-w-[120px]" title={viaje.origen}>
+                      {viaje.origen}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="truncate max-w-[120px]" title={viaje.destino}>
+                      {viaje.destino}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="truncate max-w-[100px]" title={viaje.combustible}>
+                      {viaje.combustible}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {viaje.cantidad_litros?.toLocaleString()} L
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(viaje.fecha_salida).toLocaleDateString("es-ES", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <StatusBadge estado={viaje.estado} />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium sticky right-0 bg-white">
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        onClick={() => navigate(`/viaje/${viaje._id}`)}
+                        className="text-gray-600 hover:text-gray-900"
+                        title="Ver detalle"
+                      >
+                        <EyeIcon className="h-5 w-5" />
+                        <span className="sr-only">Ver detalle</span>
+                      </button>
+
+                      <button
+                        onClick={() => onEdit(viaje)}
+                        disabled={viaje.estado === "Cancelado"}
+                        className="text-blue-600 hover:text-blue-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Editar"
+                      >
+                        <EditIcon className="h-5 w-5" />
+                        <span className="sr-only">Editar</span>
+                      </button>
+
+                      <button
+                        onClick={() => onCancel(viaje._id)}
+                        disabled={viaje.estado === "Cancelado"}
+                        className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Cancelar"
+                      >
+                        <XCircleIcon className="h-5 w-5" />
+                        <span className="sr-only">Cancelar</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
