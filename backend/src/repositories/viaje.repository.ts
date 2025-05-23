@@ -1,47 +1,32 @@
 import { type IViaje, Viaje } from "../models/Viaje";
 
 export class ViajeRepository {
+  private buildQuery(filters: Record<string, any>) {
+    const query: Record<string, any> = {};
+    if (filters.conductor)
+      query.conductor = { $regex: filters.conductor, $options: "i" };
+    if (filters.combustible) query.combustible = filters.combustible;
+    if (filters.estado) query.estado = filters.estado;
+    return query;
+  }
+
   async findAll(
     page = 1,
     limit = 10,
-    filters: { conductor?: string; combustible?: string; estado?: string } = {}
+    filters: Record<string, any> = {}
   ): Promise<{ viajes: IViaje[]; total: number; pages: number }> {
-    const query: Record<string, any> = {};
-    if (filters.conductor) {
-      query.conductor = { $regex: filters.conductor, $options: "i" };
-    }
-    if (filters.combustible) {
-      query.combustible = filters.combustible;
-    }
-    if (filters.estado) {
-      query.estado = filters.estado;
-    }
-
+    const query = this.buildQuery(filters);
     const total = await Viaje.countDocuments(query);
-
-    const skip = (page - 1) * limit;
     const pages = Math.ceil(total / limit);
-
+    const skip = (page - 1) * limit;
     const viajes = await Viaje.find(query).skip(skip).limit(limit).exec();
-
     return { viajes, total, pages };
   }
 
   async findAllWithoutPagination(
     filters: Record<string, any> = {}
   ): Promise<IViaje[]> {
-    const query: Record<string, any> = {};
-
-    if (filters.conductor) {
-      query.conductor = filters.conductor;
-    }
-    if (filters.combustible) {
-      query.combustible = filters.combustible;
-    }
-    if (filters.estado) {
-      query.estado = filters.estado;
-    }
-
+    const query = this.buildQuery(filters);
     return Viaje.find(query).exec();
   }
 

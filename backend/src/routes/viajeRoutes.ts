@@ -7,8 +7,8 @@ import {
   deleteViaje,
   getViajesStats,
   getAllViajes,
-} from "../controllers/viajeController";
-import { authMiddleware } from "../middlewares/authMiddleware";
+} from "../controllers/viaje.controller";
+import { authMiddleware } from "../middlewares/auth.middleware";
 
 const router = Router();
 

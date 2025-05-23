@@ -32,7 +32,7 @@ export const viajeSchema = Joi.object({
     .valid("En tránsito", "Finalizado", "Cancelado")
     .optional()
     .messages({
-      "any.base":
+      "any.only":
         "El estado debe ser uno de: En tránsito, Finalizado, Cancelado",
     }),
 });

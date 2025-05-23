@@ -30,5 +30,5 @@ export const validateField = (schema: Joi.ObjectSchema, fieldName: string, value
   const fieldSchema = schema.extract(fieldName)
   const { error } = fieldSchema.validate(value)
 
-  return error ? error.details[0].message : null
+  return error && error.details && error.details[0] ? error.details[0].message : null
 }
