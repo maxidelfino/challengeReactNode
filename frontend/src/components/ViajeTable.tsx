@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { ChevronUpIcon, ChevronDownIcon, EditIcon, XCircleIcon, EyeIcon } from "lucide-react"
 import StatusBadge from "./StatusBadge"
@@ -17,8 +17,19 @@ interface ViajeTableProps {
 const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) => {
   const [sortField, setSortField] = useState<keyof Viaje>("fecha_salida")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
+  const [truncatedCells, setTruncatedCells] = useState<Record<string, boolean>>({})
 
   const navigate = useNavigate()
+
+  const checkTruncation = (element: HTMLDivElement, key: string) => {
+    if (element) {
+      const isTruncated = element.scrollWidth > element.clientWidth
+      setTruncatedCells(prev => ({
+        ...prev,
+        [key]: isTruncated
+      }))
+    }
+  }
 
   const handleSort = (field: keyof Viaje) => {
     if (sortField === field) {
@@ -45,14 +56,37 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
     )
   }
 
+  const TruncatedCell = ({ content, maxWidth }: { content: string; maxWidth: string }) => {
+    const cellRef = useRef<HTMLDivElement>(null)
+    const cellKey = `${content}-${maxWidth}`
+
+    useEffect(() => {
+      if (cellRef.current) {
+        checkTruncation(cellRef.current, cellKey)
+      }
+    }, [content])
+
+    return truncatedCells[cellKey] ? (
+      <Tooltip content={content}>
+        <div ref={cellRef} className={`truncate ${maxWidth}`}>
+          {content}
+        </div>
+      </Tooltip>
+    ) : (
+      <div ref={cellRef} className={`truncate ${maxWidth}`}>
+        {content}
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
       <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
         <div className="animate-pulse space-y-4">
           <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-10 bg-gray-200 rounded"></div>
-          <div className="h-10 bg-gray-200 rounded"></div>
-          <div className="h-10 bg-gray-200 rounded"></div>
+          <div className="h-9 bg-gray-200 rounded"></div>
+          <div className="h-9 bg-gray-200 rounded"></div>
+          <div className="h-9 bg-gray-200 rounded"></div>
         </div>
       </div>
     )
@@ -75,7 +109,7 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort("camion")}
                 >
                   <div className="flex items-center">
@@ -85,7 +119,7 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort("conductor")}
                 >
                   <div className="flex items-center">
@@ -95,7 +129,7 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort("origen")}
                 >
                   <div className="flex items-center">
@@ -105,7 +139,7 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort("destino")}
                 >
                   <div className="flex items-center">
@@ -115,7 +149,7 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort("combustible")}
                 >
                   <div className="flex items-center">
@@ -125,7 +159,7 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort("cantidad_litros")}
                 >
                   <div className="flex items-center">
@@ -135,7 +169,7 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort("fecha_salida")}
                 >
                   <div className="flex items-center">
@@ -145,7 +179,7 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => handleSort("estado")}
                 >
                   <div className="flex items-center">
@@ -155,7 +189,7 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50"
+                  className="px-6 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-gray-50"
                 >
                   Acciones
                 </th>
@@ -164,35 +198,25 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
             <tbody className="bg-white divide-y divide-gray-200">
               {sortedViajes.map((viaje, index) => (
                 <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <Tooltip content={viaje.camion}>
-                      <div className="truncate max-w-[100px]">{viaje.camion}</div>
-                    </Tooltip>
+                  <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <TruncatedCell content={viaje.camion} maxWidth="max-w-[80px]" />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <Tooltip content={viaje.conductor}>
-                      <div className="truncate max-w-[150px]">{viaje.conductor}</div>
-                    </Tooltip>
+                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                    <TruncatedCell content={viaje.conductor} maxWidth="max-w-[120px]" />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <Tooltip content={viaje.origen}>
-                      <div className="truncate max-w-[120px]">{viaje.origen}</div>
-                    </Tooltip>
+                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                    <TruncatedCell content={viaje.origen} maxWidth="max-w-[100px]" />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <Tooltip content={viaje.destino}>
-                      <div className="truncate max-w-[120px]">{viaje.destino}</div>
-                    </Tooltip>
+                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                    <TruncatedCell content={viaje.destino} maxWidth="max-w-[100px]" />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <Tooltip content={viaje.combustible}>
-                      <div className="truncate max-w-[100px]">{viaje.combustible}</div>
-                    </Tooltip>
+                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                    <TruncatedCell content={viaje.combustible} maxWidth="max-w-[80px]" />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
                     {viaje.cantidad_litros?.toLocaleString()} L
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
                     {new Date(viaje.fecha_salida).toLocaleDateString("es-ES", {
                       day: "2-digit",
                       month: "2-digit",
@@ -201,44 +225,36 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
                       minute: "2-digit",
                     })}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-3 whitespace-nowrap">
                     <StatusBadge estado={viaje.estado} />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium sticky right-0 bg-white">
+                  <td className="px-6 py-3 whitespace-nowrap text-right text-sm font-medium sticky right-0 bg-white">
                     <div className="flex justify-end space-x-2">
-                      <Tooltip content="Ver detalle">
-                        <button
-                          onClick={() => navigate(`/viaje/${viaje._id}`)}
-                          className="text-gray-600 hover:text-gray-900"
-                        >
-                          <EyeIcon className="h-5 w-5" />
-                          <span className="sr-only">Ver detalle</span>
-                        </button>
-                      </Tooltip>
-
-                      <Tooltip content={viaje.estado === "Cancelado" ? "No se puede editar un viaje cancelado" : "Editar"}>
-                        <button
-                          onClick={() => onEdit(viaje)}
-                          disabled={viaje.estado === "Cancelado"}
-                          className="text-blue-600 hover:text-blue-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <EditIcon className="h-5 w-5" />
-                          <span className="sr-only">Editar</span>
-                        </button>
-                      </Tooltip>
-
-                      <Tooltip
-                        content={viaje.estado === "Cancelado" ? "Este viaje ya está cancelado" : "Cancelar viaje"}
+                      <button
+                        onClick={() => navigate(`/viaje/${viaje._id}`)}
+                        className="text-gray-600 hover:text-gray-900"
                       >
-                        <button
-                          onClick={() => onCancel(viaje._id)}
-                          disabled={viaje.estado === "Cancelado"}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <XCircleIcon className="h-5 w-5" />
-                          <span className="sr-only">Cancelar</span>
-                        </button>
-                      </Tooltip>
+                        <EyeIcon className="h-5 w-5" />
+                        <span className="sr-only">Ver detalle</span>
+                      </button>
+
+                      <button
+                        onClick={() => onEdit(viaje)}
+                        disabled={viaje.estado === "Cancelado"}
+                        className="text-blue-600 hover:text-blue-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <EditIcon className="h-5 w-5" />
+                        <span className="sr-only">Editar</span>
+                      </button>
+
+                      <button
+                        onClick={() => onCancel(viaje._id)}
+                        disabled={viaje.estado === "Cancelado"}
+                        className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <XCircleIcon className="h-5 w-5" />
+                        <span className="sr-only">Cancelar</span>
+                      </button>
                     </div>
                   </td>
                 </tr>
