@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ChevronUpIcon, ChevronDownIcon, EditIcon, XCircleIcon, EyeIcon } from "lucide-react"
 import StatusBadge from "./StatusBadge"
+import Tooltip from "./Tooltip"
 import type { Viaje } from "../types"
 
 interface ViajeTableProps {
@@ -164,29 +165,29 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
               {sortedViajes.map((viaje, index) => (
                 <tr key={index} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <div className="truncate max-w-[100px]" title={viaje.camion}>
-                      {viaje.camion}
-                    </div>
+                    <Tooltip content={viaje.camion}>
+                      <div className="truncate max-w-[100px]">{viaje.camion}</div>
+                    </Tooltip>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="truncate max-w-[150px]" title={viaje.conductor}>
-                      {viaje.conductor}
-                    </div>
+                    <Tooltip content={viaje.conductor}>
+                      <div className="truncate max-w-[150px]">{viaje.conductor}</div>
+                    </Tooltip>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="truncate max-w-[120px]" title={viaje.origen}>
-                      {viaje.origen}
-                    </div>
+                    <Tooltip content={viaje.origen}>
+                      <div className="truncate max-w-[120px]">{viaje.origen}</div>
+                    </Tooltip>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="truncate max-w-[120px]" title={viaje.destino}>
-                      {viaje.destino}
-                    </div>
+                    <Tooltip content={viaje.destino}>
+                      <div className="truncate max-w-[120px]">{viaje.destino}</div>
+                    </Tooltip>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="truncate max-w-[100px]" title={viaje.combustible}>
-                      {viaje.combustible}
-                    </div>
+                    <Tooltip content={viaje.combustible}>
+                      <div className="truncate max-w-[100px]">{viaje.combustible}</div>
+                    </Tooltip>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {viaje.cantidad_litros?.toLocaleString()} L
@@ -205,34 +206,39 @@ const ViajeTable = ({ viajes, isLoading, onEdit, onCancel }: ViajeTableProps) =>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium sticky right-0 bg-white">
                     <div className="flex justify-end space-x-2">
-                      <button
-                        onClick={() => navigate(`/viaje/${viaje._id}`)}
-                        className="text-gray-600 hover:text-gray-900"
-                        title="Ver detalle"
-                      >
-                        <EyeIcon className="h-5 w-5" />
-                        <span className="sr-only">Ver detalle</span>
-                      </button>
+                      <Tooltip content="Ver detalle">
+                        <button
+                          onClick={() => navigate(`/viaje/${viaje._id}`)}
+                          className="text-gray-600 hover:text-gray-900"
+                        >
+                          <EyeIcon className="h-5 w-5" />
+                          <span className="sr-only">Ver detalle</span>
+                        </button>
+                      </Tooltip>
 
-                      <button
-                        onClick={() => onEdit(viaje)}
-                        disabled={viaje.estado === "Cancelado"}
-                        className="text-blue-600 hover:text-blue-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Editar"
-                      >
-                        <EditIcon className="h-5 w-5" />
-                        <span className="sr-only">Editar</span>
-                      </button>
+                      <Tooltip content={viaje.estado === "Cancelado" ? "No se puede editar un viaje cancelado" : "Editar"}>
+                        <button
+                          onClick={() => onEdit(viaje)}
+                          disabled={viaje.estado === "Cancelado"}
+                          className="text-blue-600 hover:text-blue-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <EditIcon className="h-5 w-5" />
+                          <span className="sr-only">Editar</span>
+                        </button>
+                      </Tooltip>
 
-                      <button
-                        onClick={() => onCancel(viaje._id)}
-                        disabled={viaje.estado === "Cancelado"}
-                        className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Cancelar"
+                      <Tooltip
+                        content={viaje.estado === "Cancelado" ? "Este viaje ya está cancelado" : "Cancelar viaje"}
                       >
-                        <XCircleIcon className="h-5 w-5" />
-                        <span className="sr-only">Cancelar</span>
-                      </button>
+                        <button
+                          onClick={() => onCancel(viaje._id)}
+                          disabled={viaje.estado === "Cancelado"}
+                          className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <XCircleIcon className="h-5 w-5" />
+                          <span className="sr-only">Cancelar</span>
+                        </button>
+                      </Tooltip>
                     </div>
                   </td>
                 </tr>
